@@ -10,7 +10,6 @@ def process_bank1(rows):
     ] +  [[row[1], row[2], row[3], ("-" + row[4]) if row[4] != "" else row[5]] for row in rows[1:]]
 
 def process_bank2(rows):
-    print("bank2", rows[1][0], rows[1][0] != "Date")
     if rows[1][0] != "Date":
         return None
     
@@ -32,20 +31,18 @@ def process_bank2(rows):
     return data
 
 def process_bank3(rows):
-    print("bank3", rows[0][0], rows[0][0] != "Date")
     if rows[0][0] != "Date":
         return None
     
     return [
         ["Date", "Check", "Description", "Amount"],
-    ] +  [[row[0], "", row[3], row[9]] for row in rows[1:]]
+    ] +  [[row[0], "", row[3] or row[4], row[9]] for row in filter(lambda row: row[5] == "Completed", reversed(rows[1:]))]
 
 def render_markdown_table(data):
     headers = "|".join(data[0])
     table = f"|{headers}|\n"
-    table += f"|{'|'.join(['---' for _ in headers])}|\n"
+    table += f"|{'|'.join(['---' for _ in data[0]])}|\n"
     for row in data[1:]:
-        print(row)
         table += f"|{'|'.join(row)}|\n"
     return table
 
@@ -59,7 +56,6 @@ def load_csv():
         rows = list(reader)
         # test file to find matching handler
 
-        print(rows[0:3])
         data = process_bank1(rows) or process_bank2(rows) or process_bank3(rows)
         if not data:
             print("Could not find matching bank format")
